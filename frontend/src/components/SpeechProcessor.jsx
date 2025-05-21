@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createInterview, updateInterview } from '../utils/api'; // Import API functions
 import './SpeechProcessor.css';
 import ThemeToggle from './ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
@@ -11,16 +12,19 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
   const { theme } = useTheme();
   
   // Component state
+  const [currentInterviewId, setCurrentInterviewId] = useState(null); // Added state for interview ID
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [audioLevels, setAudioLevels] = useState(Array(30).fill(2));
-  const [answers, setAnswers] = useState([]);
+  // Ensure answers state stores objects: { question: String, answer: String, duration: Number }
+  const [answers, setAnswers] = useState([]); 
   const [recordingStartTime, setRecordingStartTime] = useState(null);
   const [timer, setTimer] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
-  const [_hasMicPermission, setHasMicPermission] = useState(null);
+  // Removed _hasMicPermission state as its value was not directly used to influence rendering or logic.
+  // Toast notifications are used for mic permission feedback.
   const [feedback, setFeedback] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showHelpTips, setShowHelpTips] = useState(false);
@@ -123,7 +127,7 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
     recognition.current.onerror = (event) => {
       console.error('Speech recognition error', event.error);
       if (event.error === 'not-allowed') {
-        setHasMicPermission(false);
+        // setHasMicPermission(false); // Removed as _hasMicPermission state is removed
         showToast('Microphone permission denied. Please allow access to continue.', 'error');
       }
     };
@@ -139,7 +143,7 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
       }
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setHasMicPermission(true);
+      // setHasMicPermission(true); // Removed as _hasMicPermission state is removed
       
       if (microphone.current) {
         microphone.current.disconnect();
@@ -154,7 +158,7 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
       return { stream, success: true };
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      setHasMicPermission(false);
+      // setHasMicPermission(false); // Removed as _hasMicPermission state is removed
       showToast('Unable to access your microphone. Please check permissions.', 'error');
       return { success: false };
     }
@@ -218,27 +222,8 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
     }
   }, []);
   
-  // Audio capture setup
-  const _setupAudioCapture = useCallback(async () => {
-    if (!audioContext.current) {
-      audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
-      analyzer.current = audioContext.current.createAnalyser();
-      analyzer.current.fftSize = 256;
-    }
-    
-    try {
-      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Rename stream to _stream to follow linter rules for unused vars
-      microphone.current = audioContext.current.createMediaStreamSource(audioStream);
-      microphone.current.connect(analyzer.current);
-      startAudioLevelCapture();
-      return true;
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      showToast('Microphone access denied. Please check your browser settings.', 'error');
-      return false;
-    }
-  }, [startAudioLevelCapture, showToast]);
+  // _setupAudioCapture function removed as it was unused.
+  // Its functionality is covered by initAudioAnalyzer and startAudioLevelCapture.
   
   // Provide feedback based on recording duration
   const provideFeedback = useCallback((durationSeconds) => {
@@ -284,10 +269,34 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
   const startInterview = useCallback(async () => {
     try {
       setIsLoading(true);
+
+      // Create interview if not already created
+      if (!currentInterviewId && questions && questions.length > 0) {
+        try {
+          showToast('Creating interview session...', 'info');
+          // Pass the array of question strings directly
+          const newInterview = await createInterview(questions); 
+          if (newInterview && newInterview._id) {
+            setCurrentInterviewId(newInterview._id);
+            // Initialize answers array for the current session
+            setAnswers(questions.map(q => ({ question: q, answer: '', duration: 0 })));
+            showToast('Interview session created!', 'success');
+          } else {
+            throw new Error('Failed to create interview session.');
+          }
+        } catch (apiError) {
+          console.error('Error creating interview:', apiError);
+          showToast(apiError.message || 'Could not create interview session. Please try again.', 'error');
+          setIsLoading(false);
+          return; // Stop if interview creation fails
+        }
+      }
       
       // Check microphone permissions
-      const _stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setHasMicPermission(true);
+      // The act of getting user media here will trigger the browser permission prompt
+      // if not already granted. If it fails, it will throw an error caught below.
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      // setHasMicPermission(true); // Removed
       
       // Setup audio visualization
       const { success } = await initAudioAnalyzer();
@@ -325,7 +334,7 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
   }, [initAudioAnalyzer, initSpeechRecognition, startTimer, startAudioLevelCapture, showToast]);
   
   // Stop interview recording
-  const stopInterview = useCallback(() => {
+  const stopInterview = useCallback(async () => { // Made async
     if (!isRecording) return;
     
     try {
@@ -333,20 +342,52 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
       
       // Stop recording
       setIsRecording(false);
-      stopRecording();
+      stopRecording(); // This handles speech recognition stop, timer, audio levels
       
-      const recordingDuration = (Date.now() - recordingStartTime) / 1000;
+      const recordingDurationSeconds = Math.round((Date.now() - recordingStartTime) / 1000);
       
       // Provide feedback based on duration
-      const feedback = provideFeedback(recordingDuration);
-      setFeedback(feedback);
+      const currentFeedback = provideFeedback(recordingDurationSeconds);
+      setFeedback(currentFeedback);
       
-      // Store the recording
-      const updatedAnswers = [...answers];
-      updatedAnswers[currentQuestionIndex] = transcript;
+      // Prepare the answer object
+      const newAnswerData = {
+        question: questions[currentQuestionIndex],
+        answer: transcript, // transcript state already holds the final text
+        duration: recordingDurationSeconds,
+      };
+
+      // Update local answers state
+      const updatedAnswers = answers.map((ans, index) => 
+        index === currentQuestionIndex ? newAnswerData : ans
+      );
       setAnswers(updatedAnswers);
       
-      // Reset audio visualization
+      // Persist to backend
+      if (currentInterviewId) {
+        try {
+          showToast('Saving answer...', 'info');
+          const transcriptForApi = updatedAnswers.map(ans => ({
+            questionText: ans.question,
+            answerText: ans.answer,
+            durationSeconds: ans.duration,
+          }));
+          await updateInterview(currentInterviewId, { transcript: transcriptForApi });
+          showToast('Answer saved successfully to server!', 'success');
+        } catch (apiError) {
+          console.error('Error updating interview:', apiError);
+          showToast(apiError.message || 'Could not save answer to server.', 'error');
+          // Potentially handle auth error specifically:
+          if (apiError.message.toLowerCase().includes('auth') || apiError.message.toLowerCase().includes('token')) {
+             showToast('Authentication error. Please log in again.', 'error');
+             // Consider redirecting to login: navigate('/login');
+          }
+        }
+      } else {
+        showToast('Cannot save answer: No active interview session.', 'warning');
+      }
+      
+      // Reset audio visualization (original logic)
       if (analyzer.current) {
         analyzer.current.disconnect();
         analyzer.current = null;
@@ -364,46 +405,123 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
   }, [isRecording, recordingStartTime, stopRecording, provideFeedback, answers, currentQuestionIndex, transcript, showToast]);
   
   // Save current answer function
-  const saveCurrentAnswer = useCallback(() => {
-    if (!transcript.trim()) return;
-    
-    // Update answers array
-    const updatedAnswers = [...answers];
-    updatedAnswers[currentQuestionIndex] = transcript;
-    setAnswers(updatedAnswers);
-    
-    showToast('Answer saved successfully!', 'success');
-  }, [transcript, answers, currentQuestionIndex, setAnswers, showToast]);
+  const saveCurrentAnswer = useCallback(async () => { // Made async
+    if (!transcript.trim()) {
+      showToast('Cannot save empty answer.', 'warning');
+      return;
+    }
+    if (!currentInterviewId) {
+      showToast('Cannot save: No active interview session. Please start recording first.', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const recordingDurationSeconds = timer; // Use the current timer value if not actively recording
+
+      const currentAnswerData = {
+        question: questions[currentQuestionIndex],
+        answer: transcript,
+        duration: recordingDurationSeconds,
+      };
+
+      const updatedAnswers = answers.map((ans, index) =>
+        index === currentQuestionIndex ? currentAnswerData : ans
+      );
+      setAnswers(updatedAnswers);
+
+      showToast('Saving answer to server...', 'info');
+      const transcriptForApi = updatedAnswers.map(ans => ({
+        questionText: ans.question,
+        answerText: ans.answer,
+        durationSeconds: ans.duration,
+      }));
+      await updateInterview(currentInterviewId, { transcript: transcriptForApi });
+      showToast('Answer saved successfully!', 'success');
+    } catch (apiError) {
+      console.error('Error saving answer:', apiError);
+      showToast(apiError.message || 'Could not save answer.', 'error');
+       if (apiError.message.toLowerCase().includes('auth') || apiError.message.toLowerCase().includes('token')) {
+         showToast('Authentication error. Please log in again.', 'error');
+         // navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [transcript, answers, currentQuestionIndex, setAnswers, showToast, currentInterviewId, questions, timer, setIsLoading]);
   
   // Navigate to previous question
-  const goToPreviousQuestion = useCallback(() => {
+  const goToPreviousQuestion = useCallback(async () => { // Made async
     if (currentQuestionIndex > 0) {
+      // Save current answer if it exists and there's an active interview
+      if (transcript.trim() && currentInterviewId) {
+        try {
+          setIsLoading(true); // Show loading indicator during save
+          await saveCurrentAnswer();
+        } catch (error) {
+          // saveCurrentAnswer already shows toasts for errors
+          console.error("Error saving answer before going to previous question:", error);
+          // Optionally, ask user if they want to proceed despite save error
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
       // Apply animation class for transition
       setAnimateQuestion(true);
       
       // Small delay for animation effect
       setTimeout(() => {
         setCurrentQuestionIndex(currentQuestionIndex - 1);
-        setFeedback(null);
+        setFeedback(null); // Clear feedback for the new question
         
+        // Load the answer for the new (previous) question
+        const prevAnswerData = answers[currentQuestionIndex - 1];
+        if (prevAnswerData && prevAnswerData.answer) {
+          setTranscript(prevAnswerData.answer);
+        } else {
+          setTranscript('');
+        }
+        setInterimTranscript('');
+
+
         // Reset animation flag after transition
         setTimeout(() => {
           setAnimateQuestion(false);
         }, 300);
       }, 300);
     }
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, transcript, currentInterviewId, saveCurrentAnswer, answers, setIsLoading]);
   
   // Navigate to next question
-  const goToNextQuestion = useCallback(() => {
+  const goToNextQuestion = useCallback(async () => { // Made async
     if (currentQuestionIndex < questions.length - 1) {
+      // Save current answer if it exists and there's an active interview
+      if (transcript.trim() && currentInterviewId) {
+         try {
+          setIsLoading(true); // Show loading indicator during save
+          await saveCurrentAnswer();
+        } catch (error) {
+          console.error("Error saving answer before going to next question:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
       // Apply animation class for transition
       setAnimateQuestion(true);
       
       // Small delay for animation effect
       setTimeout(() => {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setTranscript('');
+        // Clear transcript for the new question if no existing answer is loaded
+        // Or load existing answer for the next question
+        const nextAnswerData = answers[currentQuestionIndex + 1];
+        if (nextAnswerData && nextAnswerData.answer) {
+          setTranscript(nextAnswerData.answer);
+        } else {
+          setTranscript('');
+        }
         setInterimTranscript('');
         setFeedback(null);
         
@@ -413,24 +531,33 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
         }, 300);
       }, 300);
     }
-  }, [currentQuestionIndex, questions.length]);
+  }, [currentQuestionIndex, questions.length, transcript, currentInterviewId, saveCurrentAnswer, answers, setIsLoading]);
   
   // Complete the interview
-  const finishInterview = useCallback(() => {
-    if (isRecording) stopInterview();
+  const finishInterview = useCallback(async () => { // Made async
+    if (isRecording) {
+      await stopInterview(); // Ensure recording is stopped and answer saved
+    } else if (transcript.trim() && answers[currentQuestionIndex]?.answer !== transcript) {
+      // If not recording, but there's unsaved transcript for the current question, save it.
+      await saveCurrentAnswer();
+    }
     
-    // Save the last answer
-    saveCurrentAnswer();
-    
-    // Navigate to results page or trigger callback
     setIsLoading(true);
-    showToast('Interview completed! Processing your results...', 'success');
+    showToast('Interview completed! Finalizing results...', 'success');
     
-    // Could redirect to a results page or trigger a callback
+    // Ensure all answers are up-to-date for the results page
+    // The `answers` state should be current due to previous saves.
+    // No specific final API call needed here if each answer is updated individually,
+    // unless there's a specific "finalize" endpoint. Assuming not for now.
+
+    // Navigate to results page with potentially updated answers.
+    // The `answers` state (which is {question, answer, duration}) is passed.
+    // Results.jsx will need to handle this structure.
     setTimeout(() => {
-      navigate('/results', { state: { answers } });
-    }, 2000);
-  }, [isRecording, stopInterview, saveCurrentAnswer, answers, navigate, showToast]);
+      navigate('/results', { state: { answers, interviewId: currentInterviewId } }); // Pass interviewId too
+      setIsLoading(false);
+    }, 1500);
+  }, [isRecording, stopInterview, saveCurrentAnswer, answers, navigate, showToast, currentQuestionIndex, transcript, currentInterviewId, setIsLoading]);
   
   // Format time as MM:SS
   const formatTime = (seconds) => {
@@ -443,24 +570,28 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
   useEffect(() => {
     const checkMicPermission = async () => {
       try {
-        const _stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        setHasMicPermission(true);
-        
-        // Stop all tracks to release the microphone
-        _stream.getTracks().forEach(track => track.stop());
+        // Attempt to get mic stream to check permission, then stop tracks immediately
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // setHasMicPermission(true); // Removed
+        stream.getTracks().forEach(track => track.stop()); // Release the mic
       } catch (error) {
-        setHasMicPermission(false);
-        console.error('Microphone permission error:', error);
+        // setHasMicPermission(false); // Removed
+        console.error('Initial microphone permission check failed:', error);
+        // A toast might be redundant here if startInterview will also show one on failure.
+        // However, a gentle initial warning could be:
+        // showToast('Microphone access might be required. Please ensure it is enabled.', 'warning');
       }
     };
     
     checkMicPermission();
     
     // Show welcome toast after a short delay
-    setTimeout(() => {
+    const welcomeTimer = setTimeout(() => {
       showToast('Welcome to Interview Assistant! Press the Start Recording button or spacebar to begin.', 'info');
     }, 1000);
-  }, [showToast]);
+
+    return () => clearTimeout(welcomeTimer); // Cleanup timer
+  }, [showToast]); // showToast is stable due to useCallback
   
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -598,11 +729,21 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
                 index === currentQuestionIndex ? 'active' : 
                 index < currentQuestionIndex ? 'completed' : ''
               }`}
-              onClick={() => {
-                if (isRecording) stopInterview();
-                
-                // Save current answer
-                saveCurrentAnswer();
+              onClick={async () => { // Made async
+                if (isRecording) {
+                  // Need to await stopInterview as it also saves
+                  await stopInterview(); 
+                } else if (transcript.trim() && currentInterviewId && index !== currentQuestionIndex) {
+                  // Save only if there's text, an active interview, and changing question
+                  try {
+                    setIsLoading(true);
+                    await saveCurrentAnswer();
+                  } catch (error) {
+                    console.error("Error saving answer on progress step click:", error);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }
                 
                 // Add animation class
                 document.body.classList.add('question-transition');
@@ -611,8 +752,10 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
                 }, 500);
                 
                 setCurrentQuestionIndex(index);
-                if (answers[index]) {
-                  setTranscript(answers[index].answer || '');
+                // Load existing answer from the structured 'answers' state
+                const currentAnswerData = answers[index];
+                if (currentAnswerData && currentAnswerData.answer) {
+                  setTranscript(currentAnswerData.answer);
                 } else {
                   setTranscript('');
                 }
@@ -627,7 +770,18 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  if (isRecording) stopInterview();
+                  if (isRecording) {
+                    await stopInterview(); // Await if recording
+                  } else if (transcript.trim() && currentInterviewId && index !== currentQuestionIndex) {
+                     try {
+                       setIsLoading(true);
+                       await saveCurrentAnswer();
+                     } catch (error) {
+                       console.error("Error saving answer on progress step keydown:", error);
+                     } finally {
+                       setIsLoading(false);
+                     }
+                  }
                   
                   // Add animation class
                   document.body.classList.add('question-transition');
@@ -636,8 +790,10 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
                   }, 500);
                   
                   setCurrentQuestionIndex(index);
-                  if (answers[index]) {
-                    setTranscript(answers[index].answer || '');
+                  // Load existing answer from the structured 'answers' state
+                  const currentAnswerData = answers[index];
+                  if (currentAnswerData && currentAnswerData.answer) {
+                    setTranscript(currentAnswerData.answer);
                   } else {
                     setTranscript('');
                   }
@@ -809,13 +965,10 @@ const SpeechProcessor = ({ questions, onTranscriptUpdate }) => {
               <button 
                 className="save-transcript-btn"
                 onClick={() => {
-                  // Save transcript functionality
-                  const updatedAnswers = [...answers];
-                  updatedAnswers[currentQuestionIndex] = transcript;
-                  setAnswers(updatedAnswers);
-                  showToast('Answer saved successfully', 'success');
+                  // This button should also call saveCurrentAnswer to persist to backend
+                  saveCurrentAnswer();
                 }}
-                disabled={!transcript || isRecording || isLoading}
+                disabled={!transcript.trim() || isRecording || isLoading}
                 aria-label="Save transcript"
               >
                 <FontAwesomeIcon icon={faSave} /> Save

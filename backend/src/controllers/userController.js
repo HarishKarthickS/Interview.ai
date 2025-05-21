@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const validator = require('validator');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -14,6 +15,17 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
+
+  // Validate input
+  if (!name) {
+    return res.status(400).json({ message: 'Name is required' });
+  }
+  if (!email || !validator.isEmail(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+  }
 
   try {
     // Check if user exists
@@ -51,6 +63,17 @@ const registerUser = async (req, res) => {
 // @access  Public
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+
+  // Validate input
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+  if (!password) {
+    return res.status(400).json({ message: 'Password is required' });
+  }
 
   try {
     // Check for user email

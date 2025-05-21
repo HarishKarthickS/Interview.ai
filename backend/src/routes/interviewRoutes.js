@@ -4,7 +4,8 @@ const {
   createInterview,
   getInterviews,
   getInterviewById,
-  updateInterview
+  updateInterview,
+  deleteInterview // Import deleteInterview
 } = require('../controllers/interviewController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -19,6 +20,7 @@ router.route('/')
 // Get and update an interview by ID
 router.route('/:id')
   .get(getInterviewById)
-  .put(updateInterview);
+  .put(updateInterview)
+  .delete(deleteInterview); // Add DELETE route
 
 module.exports = router; 
