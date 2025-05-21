@@ -6,6 +6,17 @@ const Interview = require('../models/Interview');
 const createInterview = async (req, res) => {
   try {
     const { questions } = req.body;
+
+    // Validate questions
+    if (!questions) {
+      return res.status(400).json({ message: 'Questions are required' });
+    }
+    if (!Array.isArray(questions)) {
+      return res.status(400).json({ message: 'Questions must be an array' });
+    }
+    if (questions.some(q => typeof q !== 'string' || q.trim() === '')) {
+      return res.status(400).json({ message: 'Each question must be a non-empty string' });
+    }
     
     const interview = await Interview.create({
       userId: req.user._id,
@@ -81,6 +92,36 @@ const updateInterview = async (req, res) => {
   try {
     const { transcript, llmFeedback, cvAnalysis, finalScore } = req.body;
 
+    // Validate transcript
+    if (transcript !== undefined) {
+      if (!Array.isArray(transcript)) {
+        return res.status(400).json({ message: 'Transcript must be an array' });
+      }
+      for (const item of transcript) {
+        if (typeof item !== 'object' || item === null ||
+            typeof item.questionText !== 'string' || 
+            typeof item.answerText !== 'string' ||
+            typeof item.durationSeconds !== 'number') {
+          return res.status(400).json({ message: 'Each transcript item must have questionText (string), answerText (string), and durationSeconds (number)' });
+        }
+      }
+    }
+
+    // Validate llmFeedback
+    if (llmFeedback !== undefined && (typeof llmFeedback !== 'object' || llmFeedback === null || Array.isArray(llmFeedback))) {
+      return res.status(400).json({ message: 'llmFeedback must be an object' });
+    }
+
+    // Validate cvAnalysis
+    if (cvAnalysis !== undefined && (typeof cvAnalysis !== 'object' || cvAnalysis === null || Array.isArray(cvAnalysis))) {
+      return res.status(400).json({ message: 'cvAnalysis must be an object' });
+    }
+
+    // Validate finalScore
+    if (finalScore !== undefined && typeof finalScore !== 'number') {
+      return res.status(400).json({ message: 'finalScore must be a number' });
+    }
+
     const interview = await Interview.findById(req.params.id);
 
     // Check if interview exists
@@ -93,11 +134,19 @@ const updateInterview = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    // Update the interview
-    interview.transcript = transcript || interview.transcript;
-    interview.llmFeedback = llmFeedback || interview.llmFeedback;
-    interview.cvAnalysis = cvAnalysis || interview.cvAnalysis;
-    interview.finalScore = finalScore || interview.finalScore;
+    // Update the interview fields based on presence in req.body
+    if (req.body.transcript !== undefined) {
+      interview.transcript = req.body.transcript;
+    }
+    if (req.body.llmFeedback !== undefined) {
+      interview.llmFeedback = req.body.llmFeedback;
+    }
+    if (req.body.cvAnalysis !== undefined) {
+      interview.cvAnalysis = req.body.cvAnalysis;
+    }
+    if (req.body.finalScore !== undefined) {
+      interview.finalScore = req.body.finalScore;
+    }
 
     const updatedInterview = await interview.save();
 
@@ -113,4 +162,37 @@ module.exports = {
   getInterviews,
   getInterviewById,
   updateInterview,
+  deleteInterview, // Added for export
+};
+
+// @desc    Delete an interview
+// @route   DELETE /api/interviews/:id
+// @access  Private
+const deleteInterview = async (req, res) => {
+  try {
+    const interview = await Interview.findById(req.params.id);
+
+    // Check if interview exists
+    if (!interview) {
+      return res.status(404).json({ message: 'Interview not found' });
+    }
+
+    // Check if the user owns the interview
+    if (interview.userId.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    // Delete the interview
+    await Interview.findByIdAndDelete(req.params.id);
+    // Alternatively, if you already have the document: await interview.deleteOne();
+
+    res.status(200).json({ message: 'Interview removed' });
+  } catch (error) {
+    console.error(`Error in deleteInterview: ${error.message}`);
+    // Check for CastError (invalid ObjectId format)
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid interview ID format' });
+    }
+    res.status(500).json({ message: 'Server error' });
+  }
 }; 
