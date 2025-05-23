@@ -1,15 +1,61 @@
 /* Import modern font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+:root {
+  /* Colors */
+  --primary-color: #7F5AF0;
+  --secondary-color: #00BFA6;
+  --accent-color: #00FFFF;
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --bg-primary: #F7F9FC;
+  --bg-secondary: #FFFFFF;
+  --border-color: #E0E0E0;
+  --success-color: #00C853;
+  --warning-color: #FF9800;
+  --error-color: #D50000;
+
+  /* Typography */
+  --font-family-base: 'Inter', sans-serif;
+  --font-size-base: 1rem;
+  --line-height-base: 1.6;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-bold: 600;
+
+  /* Spacing */
+  --spacing-unit: 0.5rem;
+  --spacing-xs: var(--spacing-unit);
+  --spacing-sm: calc(var(--spacing-unit) * 2);
+  --spacing-md: calc(var(--spacing-unit) * 3);
+  --spacing-lg: calc(var(--spacing-unit) * 4);
+  --spacing-xl: calc(var(--spacing-unit) * 6);
+
+  /* Borders & Radius */
+  --border-width: 1px;
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 0.75rem;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.05);
+  --shadow-lg: 0 8px 16px rgba(0,0,0,0.05);
+
+  /* Glow Effects */
+  --accent-color-glow: rgba(0, 255, 255, 0.3); /* From --accent-color: #00FFFF; */
+  --error-color-glow: rgba(213, 0, 0, 0.3); /* From --error-color: #D50000; */
+}
+
 /* Modern CSS Reset */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 html {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  line-height: 1.15;
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-base);
+  font-size: var(--font-size-base);
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -19,9 +65,12 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  transition: background-color 0.3s ease;
+  font-family: var(--font-family-base);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  line-height: var(--line-height-base);
+  font-size: var(--font-size-base);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -54,25 +103,35 @@ button {
   cursor: pointer;
   background-color: transparent;
   background-image: none;
+  transition: all 0.2s ease-in-out; /* Updated transition */
 }
 
-button:focus {
-  outline: 1px dotted;
-  outline: 5px auto -webkit-focus-ring-color;
+button:hover, button:focus-visible {
+  box-shadow: 0 0 8px 2px var(--accent-color-glow);
 }
+
+/* Removing generic outline for button:focus, relying on :focus-visible */
+button:focus {
+  outline: none;
+}
+
 
 a {
   color: inherit;
   text-decoration: inherit;
+  transition: all 0.2s ease-in-out; /* Updated transition */
 }
 
+/* Removing generic outline for a:focus, relying on :focus-visible */
 a:focus {
-  outline: thin dotted;
+  outline: none;
 }
 
 a:active,
 a:hover {
   outline: 0;
+  /* Optional: add a subtle text shadow or color change for links on hover if desired */
+  /* color: var(--primary-color); */
 }
 
 /* Accessibility improvements */
@@ -90,8 +149,20 @@ a:hover {
 
 /* Focus and keyboard navigation */
 :focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
+  box-shadow: 0 0 8px 2px var(--accent-color-glow); /* Added glow to focus-visible */
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+  --text-primary: #E0E0E0;
+  --text-secondary: #BDBDBD;
+  --bg-primary: #121828;
+  --bg-secondary: #1A2035;
+  --border-color: #303850;
+  --accent-color-glow: rgba(0, 255, 255, 0.2); /* Slightly more subtle glow for dark mode */
+  --error-color-glow: rgba(213, 0, 0, 0.25); /* Adjusted error glow for dark mode */
 }
 
 /* Improved scrollbar styling for WebKit browsers */
@@ -101,27 +172,15 @@ a:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 5px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  background: var(--text-secondary);
+  border-radius: var(--border-radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.dark-mode ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.dark-mode ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.dark-mode ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--text-primary);
 }

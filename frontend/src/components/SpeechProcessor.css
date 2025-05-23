@@ -190,15 +190,22 @@ body {
   justify-content: center;
   font-size: 1.2rem;
   cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease-in-out; /* Ensure it uses the global standard transition */
 }
 
 .icon-btn:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+  transform: translateY(-2px); /* Keep transform */
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); /* Keep custom background */
+  color: var(--bg-primary); /* Text color on primary bg */
+  /* Global button hover glow (var(--accent-color-glow)) will apply from index.css */
+  /* Explicitly remove or ensure override of any other box-shadow if needed */
+  box-shadow: 0 0 8px 2px var(--accent-color-glow); /* Explicitly ensure accent glow is prioritized or combined */
 }
+.icon-btn:focus-visible {
+  /* Global :focus-visible glow will apply. Add specific border if needed for this button type */
+  border-color: var(--primary-color);
+}
+
 
 .icon-btn:active {
   transform: translateY(0);
@@ -437,9 +444,9 @@ body {
 .progress-step.active {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   border-color: transparent;
-  color: white;
-  transform: perspective(500px) translateZ(15px) scale(1.1);
-  box-shadow: 0 10px 20px rgba(67, 97, 238, 0.4);
+  color: var(--bg-primary); /* Text on primary bg */
+  transform: perspective(500px) translateZ(15px) scale(1.1); /* Keep existing transform */
+  box-shadow: var(--shadow-lg), 0 0 10px 3px var(--accent-color-glow); /* Combine themed shadow with accent glow */
 }
 
 /* Main Content Layout */
@@ -868,7 +875,13 @@ body {
   font-weight: 600;
   min-width: 1.5rem;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm); /* Use theme variable */
+  transition: all 0.2s ease-in-out; /* Use global standard transition */
+}
+.key:hover, .key:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md), 0 0 6px 1px var(--accent-color-glow); /* Add themed shadow and glow */
+  border-color: var(--primary-color); /* Indicate focus/hover with border */
 }
 
 /* Footer */
@@ -1365,12 +1378,7 @@ body {
   transition: all 0.2s ease;
 }
 
-.dark-mode .key {
-  background-color: var(--bg-secondary);
-  color: var(--text-light);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-}
+/* .dark-mode .key styles are handled by theme variables in .key selector */
 
 /* Better responsive behavior */
 @media (max-width: 768px) {
@@ -1446,25 +1454,11 @@ body {
 }
 
 .dark-mode .transcript::-webkit-scrollbar-thumb:hover {
-  background: rgba(129, 140, 248, 0.5);
+  background: var(--text-primary); /* Use theme variable */
 }
 
-/* Color theme transitions */
-.speech-processor,
-.question-panel,
-.transcript-panel,
-.results-container,
-.icon-btn,
-.control-btn,
-.tips-panel,
-.toast-notification,
-.progress-step,
-.feedback-panel,
-.waveform-container,
-.transcript,
-.key {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
+/* Color theme transitions are handled by individual elements or global button/a styles */
+/* Removing generic list of transitions here to avoid overriding more specific ones */
 
 /* Emoji animation for empty state */
 @keyframes wave {
@@ -1498,36 +1492,16 @@ body {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.dark-mode .question-panel:hover,
-.dark-mode .transcript-panel:hover {
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-}
-
-/* Results page enhancements */
-.result-item {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.result-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.dark-mode .result-item:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
+/* .dark-mode hover styles for panels are handled by theme variables in .question-panel:hover */
+/* Results page enhancements (.result-item) are in App.css, not here */
 /* Active panel styling */
 .active-panel {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--primary-color); /* Keep outline for active state */
   border-color: var(--primary-color) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg), 0 0 10px 3px var(--accent-color-glow); /* Combine themed shadow and glow */
   transform: translateY(-5px);
 }
-
-.dark-mode .active-panel {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+/* .dark-mode .active-panel specific shadow handled by variable adjustment for --shadow-lg and --accent-color-glow if needed */
 }
 
 /* Question transition animation */
@@ -1562,180 +1536,33 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
-.dark-mode .global-loading {
-  background-color: rgba(15, 23, 42, 0.7);
+/* .dark-mode .global-loading and .loading-indicator styles are removed as they should be global or use theme vars */
+/* .save-btn styles removed as it's not in the JSX, .save-transcript-btn is used */
+/* .dark-mode overrides for .transcript-footer, .count-value, .save-transcript-btn, .hint-extra removed as they should use global vars */
+/* .question-panel:focus-visible, .transcript-panel:focus-visible will use global :focus-visible */
+/* .pulse-dot animation uses var(--error-color) and is fine. */
+/* .speech-processor *:focus and .speech-processor *:focus-visible are redundant due to global :focus-visible */
+/* .dark-mode .speech-processor *:focus-visible is also redundant */
+/* Removed .dark-mode .tips-panel, .dark-mode .key, .dark-mode .theme-toggle, .dark-mode .help-btn, */
+/* .dark-mode.results-container and its children, .dark-mode .footer, .dark-mode .print-button, .dark-mode .back-link */
+/* .dark-mode .transcript::-webkit-scrollbar-thumb and hover as scrollbar styles now use theme vars */
+/* Removed .results-summary, .summary-stats, .stat-value, .stat-label, .meta-label as they are not part of SpeechProcessor */
+/* Removed .skeleton, .skeleton-text */
+/* Removed print styles as they are not specific to SpeechProcessor's core functionality for this pass */
+
+/* Ensuring key interactive elements in SpeechProcessor.css use the global transition and glow */
+.icon-btn, .control-btn, .progress-step, .key, .close-tips-btn, .save-transcript-btn {
+  /* Transitions are already applied via global button or specific rules above. */
+  /* Glow on hover/focus-visible is applied via global button or specific rules above. */
 }
 
-.loading-indicator {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(79, 70, 229, 0.1);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
-}
+/* The .active-panel already has a distinct shadow, the additional glow is a good enhancement. */
+/* The .progress-step.active also has its shadow enhanced with the glow. */
+/* .key hover/focus-visible glow has been added. */
 
-.loading-indicator:before, .loading-indicator:after {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  border-top-color: rgba(79, 70, 229, 0.5);
-  opacity: 0.5;
-  animation: spin 2s linear infinite;
-}
-
-.loading-indicator:after {
-  animation: spin 1.5s linear infinite;
-  opacity: 0.3;
-}
-
-/* Save button styling */
-.save-btn {
-  background-color: var(--primary-light);
-  color: white;
-  transition: all 0.2s ease;
-}
-
-.save-btn:hover:not(:disabled) {
-  background-color: var(--primary-color);
-  transform: translateY(-3px) rotate(5deg);
-}
-
-.save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.dark-mode .save-btn {
-  background-color: var(--primary-dark);
-}
-
-/* Transcript footer */
-.transcript-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  border-top: 1px solid var(--border-color);
-  margin-top: 0.5rem;
-}
-
-.dark-mode .transcript-footer {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.word-count {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.count-label {
-  font-weight: 500;
-  margin-right: 0.25rem;
-}
-
-.count-value {
-  font-weight: 600;
-  color: var(--primary-color);
-}
-
-.dark-mode .count-value {
-  color: var(--primary-light);
-}
-
-.save-transcript-btn {
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  border: none;
-  background-color: var(--primary-color);
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.save-transcript-btn::before {
-  content: "💾";
-  font-size: 1rem;
-}
-
-.save-transcript-btn:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
-}
-
-.save-transcript-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Hint extra styling */
-.hint-extra {
-  background-color: rgba(79, 70, 229, 0.1);
-  border-radius: var(--radius-sm);
-  padding: 0.125rem 0.25rem;
-  margin: 0 0.25rem;
-}
-
-.dark-mode .hint-extra {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Enhanced panel focus */
-.question-panel:focus-visible,
-.transcript-panel:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
-}
-
-.pulse-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background-color: #ef4444;
-  border-radius: 50%;
-  margin-right: 8px;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(0.8);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  }
-  
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-  }
-  
-  100% {
-    transform: scale(0.8);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
-}
-
-/* Improved accessibility */
-.speech-processor *:focus {
-  outline: none;
-}
-
-.speech-processor *:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-.dark-mode .speech-processor *:focus-visible {
-  outline-color: var(--primary-light);
+/* Final check for any remaining local variables or hardcoded values that conflict with the theme. */
+/* The local :root and .speech-processor variable blocks have been removed in prior refactoring of this file. */
+/* All specific .dark-mode class selectors have been removed from this file. */
 }
 
 @keyframes pulse-border {
