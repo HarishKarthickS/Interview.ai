@@ -4,168 +4,187 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.6); /* Slightly reduced opacity */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px); /* Increased blur */
 }
 
 .onboarding-modal {
-  background-color: var(--background-color, #fff);
-  color: var(--text-color, #333);
-  border-radius: 12px;
-  padding: 2rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-lg); /* Use theme variable */
+  padding: var(--spacing-lg); /* Use theme variable */
   width: 90%;
   max-width: 550px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg); /* Use theme variable */
   position: relative;
   overflow: hidden;
   text-align: center;
+  border: var(--border-width) solid var(--border-color);
 }
 
 .close-button {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: var(--spacing-sm); /* Use theme variable */
+  right: var(--spacing-sm); /* Use theme variable */
   background: transparent;
   border: none;
-  color: var(--text-color, #666);
-  font-size: 1.25rem;
+  color: var(--text-secondary); /* Use theme variable */
+  font-size: 1.5rem; /* Slightly larger */
   cursor: pointer;
-  transition: transform 0.2s, color 0.2s;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .close-button:hover {
-  transform: scale(1.2);
-  color: var(--primary-color, #007aff);
+  transform: scale(1.15); /* Adjusted scale */
+  color: var(--primary-color); /* Use theme variable */
 }
 
 .step-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1.5rem;
+  width: 70px; /* Adjusted size */
+  height: 70px; /* Adjusted size */
+  margin: 0 auto var(--spacing-md); /* Use theme variable */
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color, #007aff), #3ac1ff);
-  color: white;
-  font-size: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); /* Use theme variables */
+  color: var(--bg-primary); /* Text color on primary bg */
+  font-size: 1.8rem; /* Adjusted size */
+  box-shadow: var(--shadow-md); /* Use theme variable */
 }
 
 .onboarding-modal h2 {
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-  color: var(--heading-color, #222);
+  font-size: 1.6rem; /* Adjusted size */
+  margin-bottom: var(--spacing-sm); /* Use theme variable */
+  color: var(--text-primary); /* Use theme variable */
+  font-weight: var(--font-weight-bold);
 }
 
 .onboarding-modal p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  color: var(--text-secondary-color, #555);
+  font-size: 1rem; /* Adjusted size */
+  line-height: var(--line-height-base); /* Use theme variable */
+  margin-bottom: var(--spacing-lg); /* Use theme variable */
+  color: var(--text-secondary); /* Use theme variable */
 }
 
 .step-indicators {
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-md); /* Use theme variable */
 }
 
 .step-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px; /* Adjusted size */
+  height: 8px; /* Adjusted size */
   border-radius: 50%;
-  background-color: var(--text-muted-color, #ccc);
-  margin: 0 5px;
+  background-color: var(--border-color); /* Use theme variable for inactive dot */
+  margin: 0 var(--spacing-xs); /* Use theme variable */
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .step-dot.active {
-  background-color: var(--primary-color, #007aff);
-  transform: scale(1.3);
+  background-color: var(--primary-color); /* Use theme variable */
+  transform: scale(1.25); /* Adjusted scale */
 }
 
 .onboarding-actions {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  align-items: center; /* Align items vertically */
+  margin-bottom: var(--spacing-sm); /* Use theme variable */
 }
 
 .prev-btn, .next-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.2s;
+  padding: var(--spacing-sm) var(--spacing-md); /* Use theme variables */
+  border-radius: var(--border-radius-md); /* Use theme variable */
+  font-weight: var(--font-weight-bold); /* Use theme variable */
+  transition: all 0.2s ease;
   cursor: pointer;
+  border: var(--border-width) solid transparent; /* Base border */
 }
 
 .prev-btn {
-  background-color: transparent;
-  color: var(--text-color, #666);
-  border: 1px solid var(--border-color, #ddd);
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  border-color: var(--border-color); /* Use theme variable */
 }
 
 .prev-btn:hover:not(:disabled) {
-  background-color: var(--hover-color, #f5f5f5);
+  background-color: var(--border-color); /* Use theme variable for hover */
+  color: var(--text-primary);
 }
 
 .prev-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6; /* Slightly more visible */
   cursor: not-allowed;
 }
 
 .next-btn {
-  background-color: var(--primary-color, #007aff);
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--bg-primary); /* Text color on primary bg */
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  box-shadow: var(--shadow-sm); /* Use theme variable */
 }
 
 .next-btn:hover {
-  background-color: var(--primary-dark-color, #0058cc);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 122, 255, 0.4);
+  background-color: var(--secondary-color); /* Use theme variable for hover */
+  transform: translateY(-1px); /* Subtle lift */
+  box-shadow: var(--shadow-md); /* Use theme variable */
 }
 
 .skip-btn {
   background: transparent;
   border: none;
-  color: var(--text-muted-color, #999);
-  font-size: 0.9rem;
+  color: var(--text-secondary); /* Use theme variable */
+  font-size: 0.875rem; /* Adjusted size */
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+  padding: var(--spacing-xs); /* Add some padding for easier clicking */
 }
 
 .skip-btn:hover {
-  color: var(--primary-color, #007aff);
+  color: var(--primary-color); /* Use theme variable */
   text-decoration: underline;
 }
 
 @media (max-width: 600px) {
   .onboarding-modal {
-    padding: 1.5rem;
+    padding: var(--spacing-md); /* Use theme variable */
+    margin: var(--spacing-sm); /* Add margin for smaller screens */
   }
   
   .step-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
+    width: 50px; /* Adjusted size */
+    height: 50px; /* Adjusted size */
+    font-size: 1.3rem; /* Adjusted size */
+    margin-bottom: var(--spacing-sm);
   }
   
   .onboarding-modal h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem; /* Adjusted size */
   }
   
   .onboarding-modal p {
-    font-size: 1rem;
+    font-size: 0.9rem; /* Adjusted size */
+    margin-bottom: var(--spacing-md);
   }
   
   .prev-btn, .next-btn {
-    padding: 0.6rem 1.2rem;
+    padding: var(--spacing-xs) var(--spacing-sm); /* Use theme variables */
+    font-size: 0.9rem;
   }
-} 
+
+  .onboarding-actions {
+    flex-direction: column; /* Stack actions on small screens */
+    gap: var(--spacing-sm);
+  }
+
+  .skip-btn {
+    margin-top: var(--spacing-sm); /* Add space when stacked */
+  }
+}

@@ -1,7 +1,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: var(--spacing-lg) var(--spacing-md); /* Use theme variables */
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -10,199 +10,73 @@
   min-height: 100vh;
 }
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f8fa;
-  color: #2c3e50;
-  line-height: 1.6;
-  transition: background-color 0.4s ease, color 0.4s ease;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-body.dark-mode {
-  background-color: #121212;
-  color: #e9e9e9;
-}
-
-:root {
-  --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #a5b4fc;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --error-color: #ef4444;
-  --text-dark: #1e293b;
-  --text-light: #f8fafc;
-  --text-muted: #94a3b8;
-  --bg-light: #f8fafc;
-  --bg-dark: #0f172a;
-  --border-color: #e2e8f0;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --gradient-bg: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-sans);
-  color: var(--text-dark);
-  background-color: var(--bg-light);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 .app-container {
   min-height: 100vh;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: var(--spacing-lg); /* Use theme variable */
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4eaef 100%);
+  /* Removed gradient background, will rely on body background from index.css */
 }
 
-.app-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: -1;
-  overflow: hidden;
-  background-image: var(--gradient-bg);
-  opacity: 0.04;
-  pointer-events: none;
+/* Dark mode styling for app-container */
+body.dark-mode .app-container {
+  /* Removed specific dark mode gradient, will rely on body background from index.css */
 }
 
-.app-backdrop::before,
-.app-backdrop::after {
-  content: '';
-  position: absolute;
-  width: 40vw;
-  height: 40vw;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
-  pointer-events: none;
-}
-
-.app-backdrop::before {
-  background: var(--primary-color);
-  top: -15vw;
-  right: -15vw;
-  animation: float 15s ease-in-out infinite alternate;
-}
-
-.app-backdrop::after {
-  background: var(--success-color);
-  bottom: -15vw;
-  left: -15vw;
-  animation: float 20s ease-in-out infinite alternate-reverse;
-}
-
-/* Dark mode */
-body.dark-mode {
-  color: var(--text-light);
-  background-color: var(--bg-dark);
-}
-
-.dark-mode .app-container {
-  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-}
-
-.dark-mode .app-backdrop::before,
-.dark-mode .app-backdrop::after {
-  opacity: 0.2;
-}
-
-/* Animations */
-@keyframes float {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(3%, 3%) scale(1.05);
-  }
-  100% {
-    transform: translate(-3%, -2%) scale(0.95);
-  }
-}
-
-/* Responsive adjustments */
+/* Responsive adjustments for app-container */
 @media (max-width: 768px) {
   .app-container {
-    padding: 1rem;
-  }
-  
-  .app-backdrop::before,
-  .app-backdrop::after {
-    width: 60vw;
-    height: 60vw;
+    padding: var(--spacing-md); /* Use theme variable */
   }
 }
 
 @media (max-width: 480px) {
   .app-container {
-    padding: 0.5rem;
+    padding: var(--spacing-sm); /* Use theme variable */
   }
 }
 
 h1 {
-  margin-bottom: 0.75rem;
-  font-size: 3rem;
-  background: linear-gradient(90deg, #3498db, #2ecc71);
+  margin-bottom: var(--spacing-md); /* Use theme variable */
+  font-size: 2.5rem; /* Adjusted size */
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); /* Use theme variables */
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  font-weight: 800;
+  font-weight: var(--font-weight-bold); /* Use theme variable */
   letter-spacing: -0.5px;
   line-height: 1.2;
 }
 
 .app-subtitle {
-  color: #7f8c8d;
-  font-size: 1.2rem;
-  margin-bottom: 2.5rem;
-  font-weight: 400;
+  color: var(--text-secondary); /* Use theme variable */
+  font-size: 1.15rem; /* Adjusted size */
+  margin-bottom: var(--spacing-xl); /* Use theme variable */
+  font-weight: var(--font-weight-normal); /* Use theme variable */
   max-width: 650px;
   margin-left: auto;
   margin-right: auto;
 }
 
-body.dark-mode .app-subtitle {
-  color: #bdc3c7;
-}
+/* Dark mode for app-subtitle will be handled by text-secondary variable update */
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 6em; /* Example, might be adjusted */
+  padding: var(--spacing-md); /* Use theme variable */
   will-change: filter;
   transition: filter 300ms;
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 1.5em var(--primary-color)); /* Use theme variable */
 }
 
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 1.5em var(--accent-color)); /* Use theme variable */
 }
 
 @keyframes logo-spin {
@@ -221,75 +95,85 @@ body.dark-mode .app-subtitle {
 }
 
 .card {
-  padding: 2em;
+  padding: var(--spacing-lg); /* Use theme variable */
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .read-the-docs {
-  color: #888;
+  color: var(--text-secondary); /* Use theme variable */
 }
 
 @media (max-width: 768px) {
   #root {
-    padding: 1.5rem 1rem;
+  padding: var(--spacing-md) var(--spacing-sm); /* Use theme variables */
   }
 
   h1 {
-    font-size: 2.2rem;
+    font-size: 2rem; /* Adjusted size for medium screens */
   }
 
   .app-subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
+    font-size: 1rem; /* Adjusted size for medium screens */
+    margin-bottom: var(--spacing-lg); /* Use theme variable */
   }
 }
 
 @media (max-width: 480px) {
   #root {
-    padding: 1.2rem 0.5rem;
+  padding: var(--spacing-sm) var(--spacing-xs); /* Use theme variables */
     min-height: unset;
   }
 
   h1 {
-    font-size: 1.8rem;
+    font-size: 1.75rem; /* Adjusted size for small screens */
   }
   
   .app-subtitle {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.9rem; /* Adjusted size for small screens */
+    margin-bottom: var(--spacing-md); /* Use theme variable */
   }
 }
 
-/* Modern UI Elements */
+/* Modern UI Elements - This rule is now covered by index.css */
+/*
 button, 
 input, 
 textarea {
   font-family: inherit;
 }
+*/
+
+/* Results Page Styling */
+.results-container {
+}
 
 /* Results Page Styling */
 .results-container {
   max-width: 1000px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin: var(--spacing-lg) auto; /* Use theme variable */
+  padding: var(--spacing-lg); /* Use theme variable */
+  background-color: var(--bg-secondary); /* Use theme variable */
+  border-radius: var(--border-radius-md); /* Use theme variable */
+  box-shadow: var(--shadow-md); /* Use theme variable */
+  border: var(--border-width) solid var(--border-color); /* Use theme variable */
 }
 
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: var(--spacing-lg); /* Use theme variable */
+  padding-bottom: var(--spacing-md); /* Use theme variable */
+  border-bottom: var(--border-width) solid var(--border-color); /* Use theme variable */
 }
 
 .results-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  background: linear-gradient(135deg, #4f46e5, #818cf8);
+  font-size: 1.5rem; /* Adjusted size */
+  font-weight: var(--font-weight-bold); /* Use theme variable */
+  color: var(--text-primary); /* Use theme variable */
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); /* Use theme variables */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -298,69 +182,108 @@ textarea {
 .results-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-md); /* Use theme variable */
 }
 
 .result-item {
-  background-color: #f9fafb;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  border-left: 4px solid #4f46e5;
+  background-color: var(--bg-primary); /* Use theme variable */
+  padding: var(--spacing-md); /* Use theme variable */
+  border-radius: var(--border-radius-md); /* Use theme variable */
+  border-left: 4px solid var(--primary-color); /* Use theme variable */
+  box-shadow: var(--shadow-sm); /* Use theme variable */
 }
 
 .result-question {
-  font-weight: 600;
-  font-size: 1.125rem;
-  color: #1f2937;
-  margin-bottom: 0.75rem;
+  font-weight: var(--font-weight-bold); /* Use theme variable */
+  font-size: 1.1rem; /* Adjusted size */
+  color: var(--text-primary); /* Use theme variable */
+  margin-bottom: var(--spacing-sm); /* Use theme variable */
 }
 
 .result-answer {
-  color: #4b5563;
-  line-height: 1.6;
-  white-space: pre-wrap;
+  color: var(--text-secondary); /* Use theme variable */
+  line-height: var(--line-height-base); /* Use theme variable */
+  white-space: pre-wrap; /* Keep pre-wrap for formatting */
 }
 
 .result-meta {
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #e5e7eb;
-  color: #6b7280;
-  font-size: 0.875rem;
+  align-items: center; /* Vertically align items */
+  margin-top: var(--spacing-md); /* Use theme variable */
+  padding-top: var(--spacing-sm); /* Use theme variable */
+  border-top: var(--border-width) solid var(--border-color); /* Use theme variable */
+  color: var(--text-secondary); /* Use theme variable */
+  font-size: 0.85rem; /* Adjusted size */
 }
 
 .print-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background-color: #4f46e5;
-  color: white;
+  gap: var(--spacing-xs); /* Use theme variable */
+  padding: var(--spacing-sm) var(--spacing-md); /* Use theme variables */
+  background-color: var(--primary-color); /* Use theme variable */
+  color: var(--bg-primary); /* Use theme variable for text on primary bg - bg-primary is lighter */
   border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
+  border-radius: var(--border-radius-sm); /* Use theme variable */
+  font-weight: var(--font-weight-bold); /* Use theme variable - make it bold */
   cursor: pointer;
-  transition: background-color 150ms ease;
+  transition: background-color 150ms ease, box-shadow 150ms ease; /* Added box-shadow transition */
+  box-shadow: var(--shadow-sm);
 }
 
 .print-button:hover {
-  background-color: #3730a3;
+  background-color: var(--secondary-color); /* Use theme variable */
+  box-shadow: var(--shadow-md); /* Add shadow on hover */
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #4f46e5;
+  gap: var(--spacing-xs); /* Use theme variable */
+  color: var(--primary-color); /* Use theme variable */
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-normal); /* Use theme variable */
   transition: color 150ms ease;
 }
 
 .back-link:hover {
-  color: #3730a3;
+  color: var(--secondary-color); /* Use theme variable */
+  text-decoration: underline; /* Add underline on hover */
+}
+
+/* Delete button styling for Results page */
+.delete-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--error-color); /* Destructive action color */
+  color: var(--bg-primary); /* Text color on error bg */
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.delete-button:hover {
+  background-color: color-mix(in srgb, var(--error-color) 80%, black); /* Darken on hover */
+  box-shadow: var(--shadow-md), 0 0 8px 2px var(--error-color-glow); /* Added error glow */
+}
+
+.delete-button:focus-visible {
+  outline: 2px solid var(--error-color); /* Keep outline consistent with button color */
+  outline-offset: 2px;
+  box-shadow: var(--shadow-md), 0 0 8px 2px var(--error-color-glow); /* Added error glow */
+}
+
+.delete-button:disabled {
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* Loading Animation */
@@ -374,9 +297,9 @@ textarea {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(79, 70, 229, 0.2);
+  border: 3px solid var(--accent-color); /* Use theme variable for the track */
   border-radius: 50%;
-  border-top-color: #4f46e5;
+  border-top-color: var(--primary-color); /* Use theme variable for the spinning part */
   animation: spin 1s linear infinite;
 }
 
@@ -389,13 +312,13 @@ textarea {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .results-container {
-    padding: 1.5rem;
-    margin: 1rem;
+    padding: var(--spacing-md); /* Use theme variable */
+    margin: var(--spacing-sm); /* Use theme variable */
   }
   
   .results-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-sm); /* Use theme variable */
   }
 }
